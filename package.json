@@ -1,0 +1,12 @@
+{
+  "name": "advent-of-code-2022",
+  "version": "0.1.0",
+  "description": "My solutions to Advent of Code 2022",
+  "main": "index.js",
+  "repository": "git@github.com:ajcoppa/advent-of-code-2022.git",
+  "author": "AJ Coppa <aj.coppa@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^18.11.10"
+  }
+}
