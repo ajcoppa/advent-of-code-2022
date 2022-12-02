@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { loadFromFile, sum, Nothing, map, Maybe } from "./lib";
+import { loadFromFile, sum } from "./lib";
 
 async function main() {
   const rounds: string[] = await loadFromFile("02-input.txt");
