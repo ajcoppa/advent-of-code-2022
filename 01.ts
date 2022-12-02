@@ -10,11 +10,18 @@ async function main() {
   const inventoryStrings: string[] = text.trim().split("\n\n");
   const inventories: number[][] = inventoryStrings.map(parseInventory);
   console.log(`Part 1: ${partOne(inventories)}`);
+  console.log(`Part 2: ${partTwo(inventories)}`);
 }
 
 function partOne(inventories: number[][]): number {
   const sums: number[] = inventories.map(sum);
   return Math.max(...sums);
+}
+
+function partTwo(inventories: number[][]): number {
+  const sums: number[] = inventories.map(sum);
+  const topThreeSums: number[] = sums.sort((a, b) => b - a).slice(0, 3);
+  return sum(topThreeSums);
 }
 
 function parseInventory(inventory: string): number[] {
