@@ -1,14 +1,23 @@
 #!/usr/bin/env ts-node
 
+import _ from "lodash";
+
 import { loadFromFile, sum } from "./lib";
 
 async function main() {
   const sacks: string[] = await loadFromFile("03-input.txt");
   console.log(`Part 1: ${partOne(sacks)}`);
+  console.log(`Part 2: ${partTwo(sacks)}`);
 }
 
 function partOne(sacks: string[]): number {
   const splitSacks: string[][] = sacks.map(splitSack);
+  const commonItems: string[] = splitSacks.map(findCommonItem);
+  return sum(commonItems.map(calculatePriority));
+}
+
+function partTwo(sacks: string[]): number {
+  const splitSacks = _.chunk(sacks, 3);
   const commonItems: string[] = splitSacks.map(findCommonItem);
   return sum(commonItems.map(calculatePriority));
 }
@@ -19,17 +28,16 @@ function splitSack(sack: string): string[] {
 }
 
 function findCommonItem(sacks: string[]): string {
-  const charSet: Set<string> = new Set();
-  for (let i = 0; i < sacks[0].length; i++) {
-    charSet.add(sacks[0].charAt(i));
-  }
+  const charSets: Set<string>[] = sacks.map((s) => new Set(s));
 
-  let commonCharacter: string = "";
-  for (let i = 0; i < sacks[1].length; i++) {
-    const c = sacks[1].charAt(i);
-    if (charSet.has(c)) {
-      return c;
-    }
+  const intersection: Set<string> = new Set(
+    sacks[0]
+      .split("")
+      .filter((c) => charSets.slice(1).every((set) => set.has(c)))
+  );
+
+  if (intersection.size > 0) {
+    return intersection.values().next().value;
   }
 
   console.error("Found no matching character in sacks");
