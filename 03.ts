@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import _ from "lodash";
-
+import { pipe } from "@arrows/composition";
 import { loadFromFile, sum } from "./lib";
 
 async function main() {
@@ -11,15 +11,12 @@ async function main() {
 }
 
 function partOne(sacks: string[]): number {
-  const splitSacks: string[][] = sacks.map(splitSack);
-  const commonItems: string[] = splitSacks.map(findCommonItem);
-  return sum(commonItems.map(calculatePriority));
+  return sum(sacks.map(pipe(splitSack, findCommonItem, calculatePriority)));
 }
 
 function partTwo(sacks: string[]): number {
   const splitSacks = _.chunk(sacks, 3);
-  const commonItems: string[] = splitSacks.map(findCommonItem);
-  return sum(commonItems.map(calculatePriority));
+  return sum(splitSacks.map(pipe(findCommonItem, calculatePriority)));
 }
 
 function splitSack(sack: string): string[] {
