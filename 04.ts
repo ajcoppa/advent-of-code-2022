@@ -22,8 +22,16 @@ function partTwo(assignments: string[]): number {
     .filter((x) => !!x).length;
 }
 
-function parseAssignmentLine(assignment: string): Range[] {
-  return assignment.split(",").map(parseRange);
+function parseAssignmentLine(assignment: string): Assignment {
+  const ranges = assignment.split(",").map(parseRange);
+  if (ranges.length !== 2) {
+    console.error(`Range failed to parse properly: ${range}`);
+    process.exit(1);
+  }
+  return {
+    one: ranges[0],
+    two: ranges[1],
+  };
 }
 
 function parseRange(range: string): Range {
@@ -38,9 +46,10 @@ function parseRange(range: string): Range {
   };
 }
 
-function eitherFullyContains(ranges: Range[]): boolean {
+function eitherFullyContains(assignment: Assignment): boolean {
   return (
-    fullyContains(ranges[0], ranges[1]) || fullyContains(ranges[1], ranges[0])
+    fullyContains(assignment.one, assignment.two) ||
+    fullyContains(assignment.two, assignment.one)
   );
 }
 
@@ -48,8 +57,8 @@ function fullyContains(rangeOne: Range, rangeTwo: Range): boolean {
   return rangeOne.a <= rangeTwo.a && rangeOne.b >= rangeTwo.b;
 }
 
-function overlapsRanges(ranges: Range[]): boolean {
-  return overlaps(ranges[0], ranges[1]);
+function overlapsRanges(assignment: Assignment): boolean {
+  return overlaps(assignment.one, assignment.two);
 }
 
 function overlaps(rangeOne: Range, rangeTwo: Range): boolean {
@@ -62,6 +71,11 @@ function overlaps(rangeOne: Range, rangeTwo: Range): boolean {
 type Range = {
   a: number;
   b: number;
+};
+
+type Assignment = {
+  one: Range;
+  two: Range;
 };
 
 main();
