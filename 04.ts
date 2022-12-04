@@ -7,11 +7,18 @@ import { loadFromFile, sum } from "./lib";
 async function main() {
   const assignments: string[] = await loadFromFile("04-input.txt");
   console.log(`Part 1: ${partOne(assignments)}`);
+  console.log(`Part 2: ${partTwo(assignments)}`);
 }
 
 function partOne(assignments: string[]): number {
   return assignments
     .map(pipe(parseAssignmentLine, eitherFullyContains))
+    .filter((x) => !!x).length;
+}
+
+function partTwo(assignments: string[]): number {
+  return assignments
+    .map(pipe(parseAssignmentLine, overlapsRanges))
     .filter((x) => !!x).length;
 }
 
@@ -39,6 +46,17 @@ function eitherFullyContains(ranges: Range[]): boolean {
 
 function fullyContains(rangeOne: Range, rangeTwo: Range): boolean {
   return rangeOne.a <= rangeTwo.a && rangeOne.b >= rangeTwo.b;
+}
+
+function overlapsRanges(ranges: Range[]): boolean {
+  return overlaps(ranges[0], ranges[1]);
+}
+
+function overlaps(rangeOne: Range, rangeTwo: Range): boolean {
+  return (
+    (rangeOne.a <= rangeTwo.b && rangeOne.b >= rangeTwo.a) ||
+    (rangeTwo.a <= rangeOne.b && rangeTwo.b >= rangeOne.a)
+  );
 }
 
 type Range = {
