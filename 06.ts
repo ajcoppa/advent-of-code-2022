@@ -9,16 +9,14 @@ async function main() {
 }
 
 function partOne(input: string): number {
-  const windowSize = 4;
-  const windows = windowsOfOverlappingElements(input.split(""), windowSize);
-  const firstUniqueWindowIndex = windows.findIndex((window) =>
-    containsUniqueElements(window)
-  );
-  return firstUniqueWindowIndex + windowSize;
+  return uniqueSignalIndex(input, 4);
 }
 
 function partTwo(input: string): number {
-  const windowSize = 14;
+  return uniqueSignalIndex(input, 14);
+}
+
+function uniqueSignalIndex(input: string, windowSize: number): number {
   const windows = windowsOfOverlappingElements(input.split(""), windowSize);
   const firstUniqueWindowIndex = windows.findIndex((window) =>
     containsUniqueElements(window)
