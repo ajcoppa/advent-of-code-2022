@@ -8,11 +8,18 @@ async function main() {
   });
   const [stateString, instructionsString] = text.split("\n\n");
   console.log(`Part 1: ${partOne(stateString, instructionsString)}`);
+  console.log(`Part 2: ${partTwo(stateString, instructionsString)}`);
 }
 
 function partOne(state: string, instructions: string): string {
   const beginningLayout = parseLayout(state, instructions);
-  const endingLayout = runInstructions(beginningLayout);
+  const endingLayout = runInstructions(beginningLayout, Mover.CrateMover9000);
+  return endingLayout.map((row) => row.slice(-1)[0]).join("");
+}
+
+function partTwo(state: string, instructions: string): string {
+  const beginningLayout = parseLayout(state, instructions);
+  const endingLayout = runInstructions(beginningLayout, Mover.CrateMover9001);
   return endingLayout.map((row) => row.slice(-1)[0]).join("");
 }
 
@@ -74,21 +81,23 @@ function rotate90<A>(matrix: A[][]): A[][] {
   return transpose(matrix).map((row) => row.slice().reverse());
 }
 
-function runInstructions(layout: Layout): Stack[] {
+function runInstructions(layout: Layout, mover: Mover): Stack[] {
   let state = layout.startingState;
   layout.instructions.forEach((instruction) => {
-    state = runInstruction(state, instruction);
+    state = runInstruction(state, instruction, mover);
   });
   return state;
 }
 
-function runInstruction(state: Stack[], i: Instruction): Stack[] {
+function runInstruction(state: Stack[], i: Instruction, mover: Mover): Stack[] {
   let newState = [...state];
   const from = i.from - 1,
     to = i.to - 1;
   const itemsToMove = newState[from].slice(-1 * i.count);
   newState[from] = newState[from].slice(0, -1 * i.count);
-  newState[to] = newState[to].concat(itemsToMove.reverse());
+  newState[to] = newState[to].concat(
+    mover === Mover.CrateMover9000 ? itemsToMove.reverse() : itemsToMove
+  );
   return newState;
 }
 
@@ -105,5 +114,10 @@ type Instruction = {
   from: number;
   to: number;
 };
+
+enum Mover {
+  CrateMover9000,
+  CrateMover9001,
+}
 
 main();
