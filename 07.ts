@@ -4,15 +4,14 @@ import { loadFromFile, sum } from "./lib";
 
 async function main() {
   const session: string[] = await loadFromFile("07-input.txt");
-  console.log(`Part 1: ${partOne(session)}`);
-  console.log(`Part 2: ${partTwo(session)}`);
-}
-
-function partOne(session: string[]): number {
   const unparsedCommands: string[] = session.join("\n").split("$ ").slice(1);
   const commands = unparsedCommands.map(parseCommand);
   const endState = runSession(commands);
+  console.log(`Part 1: ${partOne(endState)}`);
+  console.log(`Part 2: ${partTwo(endState)}`);
+}
 
+function partOne(endState: SystemState): number {
   let relevantSize = 0;
   endState.tree.forEach((_, directory) => {
     const sizeOfThisDir = size(directory, endState.tree);
@@ -23,11 +22,7 @@ function partOne(session: string[]): number {
   return relevantSize;
 }
 
-function partTwo(session: string[]): number {
-  const unparsedCommands: string[] = session.join("\n").split("$ ").slice(1);
-  const commands = unparsedCommands.map(parseCommand);
-  const endState = runSession(commands);
-
+function partTwo(endState: SystemState): number {
   const unusedSpace = 70000000 - size("/", endState.tree);
   const minSpaceToRemove = 30000000 - unusedSpace;
   let relevantSizes: number[] = [];
