@@ -12,3 +12,19 @@ export async function loadFromFile(
   const lines = text.split("\n");
   return filterEmpty ? lines.filter((l) => l.length > 0) : lines;
 }
+
+export function identity<A>(x: A) {
+  return x;
+}
+
+export function any(xs: boolean[]): boolean {
+  return xs.reduce((a, b) => a || b, false);
+}
+
+export function all(xs: boolean[]): boolean {
+  return xs.reduce((a, b) => a && b, true);
+}
+
+export function times(xs: number[]): number {
+  return xs.reduce((a, b) => a * b);
+}

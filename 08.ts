@@ -1,17 +1,39 @@
 #!/usr/bin/env ts-node
 
+import { takeWhile } from "lodash";
 import { all, any, identity, loadFromFile } from "./lib";
 
 async function main() {
   const lines: string[] = await loadFromFile("08-input.txt");
   const heights: number[][] = parseHeights(lines);
   console.log(`Part 1: ${partOne(heights)}`);
+  console.log(`Part 2: ${partTwo(heights)}`);
 }
 
 function partOne(heights: number[][]): number {
   return heights
     .flatMap((row, y) => row.map((height, x) => isVisible(x, y, heights)))
     .filter((x) => !!x).length;
+}
+
+function partTwo(heights: number[][]): number {
+  const scores = heights.flatMap((row, y) =>
+    row.map((height, x) => scenicScore(x, y, heights))
+  );
+  return Math.max(...scores);
+}
+
+function scenicScore(x: number, y: number, heights: number[][]): number {
+  return [Direction.Up, Direction.Right, Direction.Down, Direction.Left]
+    .map((d) => {
+      const trees = treesInDirection(x, y, heights, d);
+      const visibleTrees = takeWhile(trees, (t) => t < heights[y][x]).length;
+      // If all trees are visible, just use that number
+      // If we stopped partway due to a taller tree, add one to include that
+      // last taller tree in the count
+      return visibleTrees === trees.length ? visibleTrees : visibleTrees + 1;
+    })
+    .reduce((a, b) => a * b);
 }
 
 function isVisible(x: number, y: number, heights: number[][]): boolean {
