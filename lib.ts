@@ -28,3 +28,11 @@ export function all(xs: boolean[]): boolean {
 export function times(xs: number[]): number {
   return xs.reduce((a, b) => a * b);
 }
+
+export function repeat<A>(x: A, n: number): A[] {
+  const xs: A[] = [];
+  for (let i = 0; i < n; i++) {
+    xs.push(x);
+  }
+  return xs;
+}
