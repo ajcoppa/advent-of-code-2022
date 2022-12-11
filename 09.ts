@@ -9,12 +9,22 @@ async function main() {
 }
 
 function partOne(instructions: Direction[]): number {
+  let state = initialState(instructions);
+
+  while (state.instructions.length > 0) {
+    state = tick(state);
+  }
+
+  return state.grid.flatMap((row) => row.filter((x) => !!x)).length;
+}
+
+function initialState(instructions: Direction[]): SystemState {
   const defaultSize = 500;
   const grid: boolean[][] = repeat(false, defaultSize).map((_) =>
     repeat(false, defaultSize)
   );
 
-  let state = {
+  return {
     head: {
       x: Math.floor(defaultSize / 2),
       y: Math.floor(defaultSize / 2) - 1,
@@ -26,15 +36,6 @@ function partOne(instructions: Direction[]): number {
     grid,
     instructions,
   };
-
-  // Move head first without moving tail
-  state = tick(state, false);
-
-  while (state.instructions.length > 0) {
-    state = tick(state);
-  }
-
-  return state.grid.flatMap((row) => row.filter((x) => !!x)).length;
 }
 
 function tick(state: SystemState, shouldMoveTail: boolean = true): SystemState {
