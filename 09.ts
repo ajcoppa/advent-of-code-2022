@@ -38,12 +38,12 @@ function initialState(instructions: Direction[]): SystemState {
   };
 }
 
-function tick(state: SystemState, shouldMoveTail: boolean = true): SystemState {
+function tick(state: SystemState): SystemState {
   let newHead = applyModifiers(
     state.head,
     directionPositionModifiers(state.instructions[0])
   );
-  const newTail = shouldMoveTail ? moveTail(newHead, state.tail) : state.tail;
+  const newTail = moveTail(newHead, state.tail);
   state.grid[newTail.y][newTail.x] = true;
 
   return {
