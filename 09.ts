@@ -6,10 +6,11 @@ async function main() {
   const lines: string[] = await loadFromFile("09-input.txt");
   const instructions: Direction[] = parseInstructions(lines);
   console.log(`Part 1: ${partOne(instructions)}`);
+  console.log(`Part 2: ${partTwo(instructions)}`);
 }
 
 function partOne(instructions: Direction[]): number {
-  let state = initialState(instructions);
+  let state = initialState(instructions, 1);
 
   while (state.instructions.length > 0) {
     state = tick(state);
@@ -18,7 +19,20 @@ function partOne(instructions: Direction[]): number {
   return state.grid.flatMap((row) => row.filter((x) => !!x)).length;
 }
 
-function initialState(instructions: Direction[]): SystemState {
+function partTwo(instructions: Direction[]): number {
+  let state = initialState(instructions, 9);
+
+  while (state.instructions.length > 0) {
+    state = tick(state);
+  }
+
+  return state.grid.flatMap((row) => row.filter((x) => !!x)).length;
+}
+
+function initialState(
+  instructions: Direction[],
+  tailSize: number
+): SystemState {
   const defaultSize = 500;
   const grid: boolean[][] = repeat(false, defaultSize).map((_) =>
     repeat(false, defaultSize)
@@ -29,10 +43,13 @@ function initialState(instructions: Direction[]): SystemState {
       x: Math.floor(defaultSize / 2),
       y: Math.floor(defaultSize / 2) - 1,
     },
-    tail: {
-      x: Math.floor(defaultSize / 2),
-      y: Math.floor(defaultSize / 2) - 1,
-    },
+    tail: repeat(
+      {
+        x: Math.floor(defaultSize / 2),
+        y: Math.floor(defaultSize / 2) - 1,
+      },
+      tailSize
+    ),
     grid,
     instructions,
   };
@@ -43,15 +60,24 @@ function tick(state: SystemState): SystemState {
     state.head,
     directionPositionModifiers(state.instructions[0])
   );
-  const newTail = moveTail(newHead, state.tail);
-  state.grid[newTail.y][newTail.x] = true;
+  const newRope = moveRope([newHead, ...state.tail]);
+  const tailEnd = newRope.length - 1;
+  state.grid[newRope[tailEnd].y][newRope[tailEnd].x] = true;
 
   return {
     head: newHead,
-    tail: newTail,
+    tail: newRope.slice(1),
     grid: state.grid,
     instructions: state.instructions.slice(1),
   };
+}
+
+function moveRope(rope: Coord[]): Coord[] {
+  for (let i = 1; i < rope.length; i++) {
+    const prevSegment = rope[i - 1];
+    rope[i] = moveTail(prevSegment, rope[i]);
+  }
+  return rope;
 }
 
 function moveTail(head: Coord, tail: Coord): Coord {
@@ -147,7 +173,7 @@ type Coord = {
 
 type SystemState = {
   head: Coord;
-  tail: Coord;
+  tail: Coord[];
   grid: boolean[][];
   instructions: Direction[];
 };
