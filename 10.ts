@@ -1,17 +1,20 @@
 #!/usr/bin/env ts-node
 
-import { loadFromFile, sum } from "./lib";
+import { chunk } from "lodash";
+import { loadFromFile, repeat, sum } from "./lib";
 
 async function main() {
   const lines: string[] = await loadFromFile("10-input.txt");
   const instructions: Instruction[] = parseInstructions(lines);
   console.log(`Part 1: ${partOne(instructions)}`);
+  console.log(`Part 2: \n${partTwo(instructions)}`);
 }
 
 function partOne(instructions: Instruction[]): number {
   let state: SystemState = {
     x: 1,
     cycle: 1,
+    pixels: repeat(false, 240),
   };
   let remainingInstructions = convertInstructionsToSingleCycle(instructions);
   let valuesAtInterestingStates: number[] = [];
@@ -26,19 +29,38 @@ function partOne(instructions: Instruction[]): number {
   return sum(valuesAtInterestingStates);
 }
 
+function partTwo(instructions: Instruction[]): string {
+  let state: SystemState = {
+    x: 1,
+    cycle: 1,
+    pixels: repeat(false, 240),
+  };
+  let remainingInstructions = convertInstructionsToSingleCycle(instructions);
+  while (remainingInstructions.length > 0) {
+    state = runInstruction(state, remainingInstructions[0]);
+    remainingInstructions = remainingInstructions.slice(1);
+  }
+  return pixelsString(state.pixels);
+}
+
 function runInstruction(
   state: SystemState,
   instruction: Instruction
 ): SystemState {
+  const currentPixel = state.cycle - 1;
+  const shouldDraw = [-1, 0, 1].includes(state.x - (currentPixel % 40));
+  state.pixels[currentPixel] = shouldDraw;
   if (instruction.kind === "noop") {
     return {
       x: state.x,
       cycle: state.cycle + 1,
+      pixels: state.pixels,
     };
   } else {
     return {
       x: state.x + instruction.n,
       cycle: state.cycle + 1,
+      pixels: state.pixels,
     };
   }
 }
@@ -75,6 +97,13 @@ function convertInstructionsToSingleCycle(
   );
 }
 
+function pixelsString(pixels: boolean[]): string {
+  let pixelsStr: string[] = pixels.map((p) => (p ? "#" : "."));
+  return chunk(pixelsStr, 40)
+    .map((cs) => cs.join(""))
+    .join("\n");
+}
+
 interface Noop {
   kind: "noop";
 }
@@ -89,6 +118,7 @@ type Instruction = Noop | Addx;
 type SystemState = {
   x: number;
   cycle: number;
+  pixels: boolean[];
 };
 
 main();
