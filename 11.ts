@@ -7,29 +7,46 @@ async function main() {
   const text = await fs.readFile("11-input.txt", { encoding: "utf-8" });
   const monkeyStrings = text.split("\n\n");
   const monkeys: Monkey[] = parseMonkeys(monkeyStrings);
+  const partTwoMonkeys = parseMonkeys(monkeyStrings);
   console.log(`Part 1: ${partOne(monkeys)}`);
+  console.log(`Part 2: ${partTwo(partTwoMonkeys)}`);
 }
 
-function partOne(monkeys: Monkey[]): number {
-  let monkeyState = _.clone(monkeys);
+function partOne(monkeys: Monkey[]): BigInt {
   let round = 1;
   while (round <= 20) {
-    monkeyState = runRound(monkeys);
+    monkeys = runRound(monkeys);
     round++;
   }
   const topTwo = monkeys
-    .sort((a, b) => b.inspections - a.inspections)
+    .sort((a, b) => bigIntSort(a.inspections, b.inspections))
     .slice(0, 2);
   return topTwo[0].inspections * topTwo[1].inspections;
 }
 
-function runRound(monkeys: Monkey[]): Monkey[] {
+function partTwo(monkeys: Monkey[]): BigInt {
+  let round = 1;
+  while (round <= 10000) {
+    monkeys = runRound(monkeys, false);
+    round++;
+  }
+  const topTwo = monkeys
+    .sort((a, b) => bigIntSort(a.inspections, b.inspections))
+    .slice(0, 2);
+  return topTwo[0].inspections * topTwo[1].inspections;
+}
+
+function runRound(monkeys: Monkey[], divideByThree: boolean = true): Monkey[] {
+  const lcm = bigIntProduct(monkeys.map((m) => m.testDivisor));
   monkeys.forEach((monkey) => {
     monkey.items.forEach((item) => {
-      const newValue = Math.floor(monkey.f(item) / 3);
-      const whereToThrow = monkey.test(newValue)
-        ? monkey.trueMonkeyIndex
-        : monkey.falseMonkeyIndex;
+      const newValue: bigint = divideByThree
+        ? BigInt(Math.floor(Number(BigInt.asIntN(64, monkey.f(item))) / 3))
+        : monkey.f(item) % lcm;
+      const whereToThrow =
+        newValue % monkey.testDivisor === BigInt(0)
+          ? monkey.trueMonkeyIndex
+          : monkey.falseMonkeyIndex;
       monkeys[whereToThrow].items.push(newValue);
       monkey.inspections++;
     });
@@ -48,7 +65,7 @@ function parseMonkey(monkey: string): Monkey {
     console.error(`Error parsing items for monkey: ${monkey}`);
     process.exit(1);
   }
-  const items = itemMatches[1].split(",").map((s) => parseInt(s, 10));
+  const items = itemMatches[1].split(",").map((s) => BigInt(parseInt(s, 10)));
 
   const fMatches = monkey.match(/Operation: new = old ([^\n]+)/);
   if (!fMatches) {
@@ -65,7 +82,7 @@ function parseMonkey(monkey: string): Monkey {
     console.error(`Error parsing div for monkey: ${monkey}`);
     process.exit(1);
   }
-  const divisor = parseInt(divisorMatches[1], 10);
+  const divisor = BigInt(parseInt(divisorMatches[1], 10));
 
   const trueMonkeyMatches = monkey.match(/If true: throw to monkey ([^\n]+)/);
   if (!trueMonkeyMatches) {
@@ -84,14 +101,14 @@ function parseMonkey(monkey: string): Monkey {
   return {
     items,
     f,
-    test: (n) => n % divisor === 0,
+    testDivisor: divisor,
     trueMonkeyIndex,
     falseMonkeyIndex,
-    inspections: 0,
+    inspections: BigInt(0),
   };
 }
 
-function operation(o: string, operandStr: string): (n: number) => number {
+function operation(o: string, operandStr: string): (n: bigint) => bigint {
   if (operandStr === "old") {
     if (o === "*") {
       return (n) => n * n;
@@ -99,7 +116,7 @@ function operation(o: string, operandStr: string): (n: number) => number {
       return (n) => n + n;
     }
   }
-  const operand = parseInt(operandStr, 10);
+  const operand = BigInt(parseInt(operandStr, 10));
   if (o === "*") {
     return (n) => n * operand;
   } else if (o === "+") {
@@ -110,13 +127,21 @@ function operation(o: string, operandStr: string): (n: number) => number {
   process.exit(1);
 }
 
+function bigIntSort(a: BigInt, b: BigInt): number {
+  return b > a ? 1 : b === a ? 0 : -1;
+}
+
+function bigIntProduct(xs: bigint[]): bigint {
+  return xs.reduce((a, b) => a * b, BigInt(1));
+}
+
 type Monkey = {
-  items: number[];
-  f: (n: number) => number;
-  test: (n: number) => boolean;
+  items: bigint[];
+  f: (n: bigint) => bigint;
+  testDivisor: bigint;
   trueMonkeyIndex: number;
   falseMonkeyIndex: number;
-  inspections: number;
+  inspections: bigint;
 };
 
 main();
