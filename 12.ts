@@ -22,6 +22,7 @@ function dijkstraDistance(map: Map): number {
       continue;
     }
 
+    // Stringify to get around object equality issues
     visited.add(JSON.stringify(coord));
     if (coord.x === map.end.x && coord.y === map.end.y) {
       return distance;
