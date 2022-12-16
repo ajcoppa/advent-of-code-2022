@@ -1,4 +1,5 @@
 #!/usr/bin/env ts-node
+import _ from "lodash";
 
 import { loadFromFile } from "./lib";
 import { Coord, getAdjacentCoords } from "./lib/Coord";
@@ -6,11 +7,26 @@ import { Coord, getAdjacentCoords } from "./lib/Coord";
 async function main() {
   const lines: string[] = await loadFromFile("12-input.txt");
   const map: Map = parseMap(lines);
+  const otherMap: Map = _.clone(map);
   console.log(`Part 1: ${partOne(map)}`);
+  console.log(`Part 2: ${partTwo(otherMap)}`);
 }
 
 function partOne(map: Map): number {
   return dijkstraDistance(map);
+}
+
+function partTwo(map: Map): number {
+  const allStartingCoords = map.heights
+    .map((row, y) => row.map((height, x) => (height === 0 ? { x, y } : null)))
+    .flatMap((row) => row.filter((x) => x !== null));
+
+  const distances: number[] = allStartingCoords.map((coord) => {
+    const thisMap = _.clone(map);
+    thisMap.start = coord!;
+    return dijkstraDistance(thisMap);
+  });
+  return Math.min(...distances);
 }
 
 function dijkstraDistance(map: Map): number {
@@ -40,8 +56,7 @@ function dijkstraDistance(map: Map): number {
       }))
     );
   }
-  console.error("Finished without finding end");
-  process.exit(1);
+  return Number.MAX_SAFE_INTEGER;
 }
 
 function parseMap(lines: string[]): Map {
